@@ -90,6 +90,54 @@ export async function pulpoRequest(
 	return response.body as IDataObject;
 }
 
+export async function pulpoFormRequest(
+	context: PulpoContext,
+	endpoint: string,
+	formFields: IDataObject,
+): Promise<IDataObject | null> {
+	const credentials = await context.getCredentials('pulpoWmsApi');
+	const baseUrl = `https://${credentials.environment as string}.pulpo.co/api/v1`;
+	const token = await acquireToken(context);
+
+	const params = new URLSearchParams();
+	for (const [key, value] of Object.entries(formFields)) {
+		if (value !== undefined && value !== null && value !== '') {
+			params.append(key, String(value));
+		}
+	}
+
+	const options: IHttpRequestOptions = {
+		method: 'POST',
+		url: `${baseUrl}${endpoint}`,
+		headers: {
+			Authorization: `Bearer ${token}`,
+			'Content-Type': 'application/x-www-form-urlencoded',
+		},
+		body: params.toString(),
+		returnFullResponse: true,
+		ignoreHttpStatusErrors: true,
+	};
+
+	let response: IN8nHttpFullResponse;
+	try {
+		response = (await context.helpers.httpRequest(options)) as IN8nHttpFullResponse;
+	} catch (error) {
+		throw new NodeApiError(context.getNode(), error as JsonObject);
+	}
+
+	if (response.statusCode === 404) {
+		return null;
+	}
+
+	if (response.statusCode >= 400) {
+		throw new NodeApiError(context.getNode(), response.body as JsonObject, {
+			httpCode: String(response.statusCode),
+		});
+	}
+
+	return response.body as IDataObject;
+}
+
 export async function pulpoRequestAll(
 	context: PulpoContext,
 	endpoint: string,
