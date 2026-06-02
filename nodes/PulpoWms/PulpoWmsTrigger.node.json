@@ -1,0 +1,18 @@
+{
+	"node": "n8n-nodes-pulpo-wms.pulpoWmsTrigger",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Development", "Developer Tools"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://github.com/Mhd-Bashi/PulpoWMS_n8n_Custom_Node#readme"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://github.com/Mhd-Bashi/PulpoWMS_n8n_Custom_Node#readme"
+			}
+		]
+	}
+}
