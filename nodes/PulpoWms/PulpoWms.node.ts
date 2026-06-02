@@ -3,7 +3,9 @@ import {
 	NodeOperationError,
 	type IDataObject,
 	type IExecuteFunctions,
+	type ILoadOptionsFunctions,
 	type INodeExecutionData,
+	type INodePropertyOptions,
 	type INodeType,
 	type INodeTypeDescription,
 	type JsonObject,
@@ -63,6 +65,25 @@ export class PulpoWms implements INodeType {
 			...thirdPartyOperations,
 			...thirdPartyFields,
 		],
+	};
+
+	methods = {
+		loadOptions: {
+			async getWarehouses(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const records = await pulpoRequestAll(this, '/warehouses/', 'warehouses');
+				return records.map((w) => ({
+					name: (w.name as string) || `Warehouse ${w.id as number}`,
+					value: w.id as number,
+				}));
+			},
+			async getLocations(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const records = await pulpoRequestAll(this, '/warehouses/locations', 'locations');
+				return records.map((l) => ({
+					name: (l.code as string) || `Location ${l.id as number}`,
+					value: l.id as number,
+				}));
+			},
+		},
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
