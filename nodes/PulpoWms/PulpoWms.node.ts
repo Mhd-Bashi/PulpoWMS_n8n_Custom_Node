@@ -1,12 +1,15 @@
 import {
 	NodeConnectionTypes,
 	NodeOperationError,
+	type IDataObject,
 	type IExecuteFunctions,
 	type INodeExecutionData,
 	type INodeType,
 	type INodeTypeDescription,
 	type JsonObject,
 } from 'n8n-workflow';
+import { productOperations, productFields } from './descriptions/product';
+import { pulpoRequest, pulpoRequestAll } from './transport/request';
 
 export class PulpoWms implements INodeType {
 	description: INodeTypeDescription = {
@@ -39,6 +42,8 @@ export class PulpoWms implements INodeType {
 				],
 				default: 'salesOrder',
 			},
+			...productOperations,
+			...productFields,
 		],
 	};
 
@@ -50,21 +55,59 @@ export class PulpoWms implements INodeType {
 			try {
 				const resource = this.getNodeParameter('resource', i) as string;
 
-				switch (resource) {
-					case 'incomingGood':
-					case 'inventoryStock':
-					case 'product':
-					case 'purchaseOrder':
-					case 'salesOrder':
-					case 'salesOrderFulfillment':
-					case 'thirdParty':
-						break;
-					default:
-						throw new NodeOperationError(
-							this.getNode(),
-							`Unknown resource: "${resource}"`,
-							{ itemIndex: i },
-						);
+				if (resource === 'product') {
+					const operation = this.getNodeParameter('operation', i) as string;
+
+					if (operation === 'getAll') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
+						const qs: IDataObject = { ...filters };
+
+						if (returnAll) {
+							const products = await pulpoRequestAll(this, '/inventory/products', 'products', qs);
+							returnData.push(...products.map((item) => ({ json: item, pairedItem: { item: i } })));
+						} else {
+							const limit = this.getNodeParameter('limit', i, 50) as number;
+							const offset = this.getNodeParameter('offset', i, 0) as number;
+							const result = await pulpoRequest(this, 'GET', '/inventory/products', undefined, {
+								...qs,
+								limit,
+								offset,
+							});
+							const products = ((result?.products as IDataObject[]) ?? []);
+							returnData.push(...products.map((item) => ({ json: item, pairedItem: { item: i } })));
+						}
+					} else if (operation === 'get') {
+						const productId = this.getNodeParameter('productId', i) as number;
+						const result = await pulpoRequest(this, 'GET', `/inventory/products/${productId}`);
+						if (result) {
+							returnData.push({ json: result, pairedItem: { item: i } });
+						}
+					} else if (operation === 'create') {
+						const sku = this.getNodeParameter('sku', i) as string;
+						const name = this.getNodeParameter('name', i) as string;
+						const additionalFields = this.getNodeParameter('additionalFields', i, {}) as IDataObject;
+						const body: IDataObject = { sku, name, ...additionalFields };
+						const result = await pulpoRequest(this, 'POST', '/inventory/products', body);
+						if (result) {
+							returnData.push({ json: result, pairedItem: { item: i } });
+						}
+					} else if (operation === 'update') {
+						const productId = this.getNodeParameter('productId', i) as number;
+						const updateFields = this.getNodeParameter('updateFields', i, {}) as IDataObject;
+						const result = await pulpoRequest(this, 'PUT', `/inventory/products/${productId}`, updateFields);
+						if (result) {
+							returnData.push({ json: result, pairedItem: { item: i } });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), `Unknown operation: "${operation}"`, { itemIndex: i });
+					}
+				} else {
+					throw new NodeOperationError(
+						this.getNode(),
+						`Resource "${resource}" is not yet implemented.`,
+						{ itemIndex: i },
+					);
 				}
 			} catch (error) {
 				if (this.continueOnFail()) {
