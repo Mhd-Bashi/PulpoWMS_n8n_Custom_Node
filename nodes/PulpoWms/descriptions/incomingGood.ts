@@ -1,0 +1,251 @@
+import type { INodeProperties } from 'n8n-workflow';
+
+export const incomingGoodOperations: INodeProperties[] = [
+	{
+		displayName: 'Operation',
+		name: 'operation',
+		type: 'options',
+		noDataExpression: true,
+		displayOptions: { show: { resource: ['incomingGood'] } },
+		options: [
+			{
+				name: 'Create',
+				value: 'create',
+				action: 'Create an incoming good',
+				description: 'Create a new incoming good document',
+			},
+			{
+				name: 'Get',
+				value: 'get',
+				action: 'Get an incoming good',
+				description: 'Get an incoming good by ID',
+			},
+			{
+				name: 'Get Many',
+				value: 'getAll',
+				action: 'Get many incoming goods',
+				description: 'Get a list of incoming good documents',
+			},
+		],
+		default: 'getAll',
+	},
+];
+
+export const incomingGoodFields: INodeProperties[] = [
+	// ── Get Many ──────────────────────────────────────────────────────────────
+	{
+		displayName: 'Return All',
+		name: 'returnAll',
+		type: 'boolean',
+		displayOptions: { show: { resource: ['incomingGood'], operation: ['getAll'] } },
+		default: false,
+		description: 'Whether to return all results or only up to a given limit',
+	},
+	{
+		displayName: 'Limit',
+		name: 'limit',
+		type: 'number',
+		typeOptions: { minValue: 1, maxValue: 1000 },
+		displayOptions: {
+			show: { resource: ['incomingGood'], operation: ['getAll'], returnAll: [false] },
+		},
+		default: 50,
+		description: 'Max number of results to return',
+	},
+	{
+		displayName: 'Offset',
+		name: 'offset',
+		type: 'number',
+		typeOptions: { minValue: 0 },
+		displayOptions: {
+			show: { resource: ['incomingGood'], operation: ['getAll'], returnAll: [false] },
+		},
+		default: 0,
+		description: 'Number of results to skip',
+	},
+	{
+		displayName: 'Filters',
+		name: 'filters',
+		type: 'collection',
+		placeholder: 'Add Filter',
+		default: {},
+		displayOptions: { show: { resource: ['incomingGood'], operation: ['getAll'] } },
+		options: [
+			{
+				displayName: 'Document Type',
+				name: 'document_type',
+				type: 'options',
+				options: [
+					{ name: 'None', value: 'none' },
+					{ name: 'Purchase Order', value: 'purchase_order' },
+					{ name: 'Return', value: 'return' },
+				],
+				default: 'none',
+				description: 'Filter by document type',
+			},
+			{
+				displayName: 'End Date',
+				name: 'end_date',
+				type: 'string',
+				default: '',
+				description: 'Filter by end date (format: YYYY-MM-DD)',
+			},
+			{
+				displayName: 'Inserted At',
+				name: 'inserted_at',
+				type: 'string',
+				default: '',
+				description: 'Filter by creation date (format: YYYY-MM-DD)',
+			},
+			{
+				displayName: 'Merchant ID',
+				name: 'merchant_id',
+				type: 'number',
+				default: 0,
+				description: 'Filter by merchant ID',
+			},
+			{
+				displayName: 'Owner ID',
+				name: 'owner_id',
+				type: 'number',
+				default: 0,
+				description: 'Filter by user ID of the owner',
+			},
+			{
+				displayName: 'Purchase Order ID',
+				name: 'purchase_order_id',
+				type: 'number',
+				default: 0,
+				description: 'Filter by linked purchase order ID',
+			},
+			{
+				displayName: 'Sequence Number',
+				name: 'sequence_number',
+				type: 'string',
+				default: '',
+				description: 'Filter by incoming good sequence number',
+			},
+			{
+				displayName: 'Start Date',
+				name: 'start_date',
+				type: 'string',
+				default: '',
+				description: 'Filter by start date (format: YYYY-MM-DD)',
+			},
+		],
+	},
+
+	// ── Get ───────────────────────────────────────────────────────────────────
+	{
+		displayName: 'Incoming Good ID',
+		name: 'incomingGoodId',
+		type: 'number',
+		required: true,
+		displayOptions: { show: { resource: ['incomingGood'], operation: ['get'] } },
+		default: 0,
+		description: 'ID of the incoming good document',
+	},
+
+	// ── Create ────────────────────────────────────────────────────────────────
+	{
+		displayName: 'Document Type',
+		name: 'documentType',
+		type: 'options',
+		required: true,
+		displayOptions: { show: { resource: ['incomingGood'], operation: ['create'] } },
+		options: [
+			{ name: 'None', value: 'none' },
+			{ name: 'Purchase Order', value: 'purchase_order' },
+			{ name: 'Return', value: 'return' },
+		],
+		default: 'purchase_order',
+		description: 'Type of document that generated this incoming good',
+	},
+	{
+		displayName: 'Additional Fields',
+		name: 'additionalFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: { show: { resource: ['incomingGood'], operation: ['create'] } },
+		options: [
+			{
+				displayName: 'Criterium',
+				name: 'criterium',
+				type: 'string',
+				default: '',
+				description: 'Grouping or routing criterium for the incoming good',
+			},
+			{
+				displayName: 'End Date',
+				name: 'end_date',
+				type: 'string',
+				default: '',
+				description: 'End date of the reception window (format: YYYY-MM-DD)',
+			},
+			{
+				displayName: 'Items (JSON)',
+				name: 'items',
+				type: 'json',
+				default: '[]',
+				description: 'Array of incoming good line items. Each item: { product_id, quantity, line_order_id?, notes? }.',
+			},
+			{
+				displayName: 'Merchant Channel ID',
+				name: 'merchant_channel_id',
+				type: 'number',
+				default: 0,
+				description: 'Merchant channel ID to associate with',
+			},
+			{
+				displayName: 'Merchant ID',
+				name: 'merchant_id',
+				type: 'number',
+				default: 0,
+				description: 'Merchant ID to associate with',
+			},
+			{
+				displayName: 'Notes',
+				name: 'notes',
+				type: 'string',
+				default: '',
+				description: 'Additional notes for the incoming good',
+			},
+			{
+				displayName: 'Purchase Order ID',
+				name: 'purchase_order_id',
+				type: 'number',
+				default: 0,
+				description: 'ID of the linked purchase order',
+			},
+			{
+				displayName: 'Sales Order ID',
+				name: 'sales_order_id',
+				type: 'number',
+				default: 0,
+				description: 'ID of the linked sales order (for returns)',
+			},
+			{
+				displayName: 'Start Date',
+				name: 'start_date',
+				type: 'string',
+				default: '',
+				description: 'Start date of the reception window (format: YYYY-MM-DD)',
+			},
+			{
+				displayName: 'Third Party ID',
+				name: 'third_party_id',
+				type: 'number',
+				default: 0,
+				description: 'ID of the supplier (third party)',
+			},
+			{
+				displayName: 'Warehouse ID',
+				name: 'warehouse_id',
+				type: 'number',
+				default: 0,
+				description: 'ID of the receiving warehouse',
+			},
+		],
+	},
+];

@@ -8,6 +8,7 @@ import {
 	type INodeTypeDescription,
 	type JsonObject,
 } from 'n8n-workflow';
+import { incomingGoodOperations, incomingGoodFields } from './descriptions/incomingGood';
 import { productOperations, productFields } from './descriptions/product';
 import { purchaseOrderOperations, purchaseOrderFields } from './descriptions/purchaseOrder';
 import { salesOrderOperations, salesOrderFields } from './descriptions/salesOrder';
@@ -45,6 +46,8 @@ export class PulpoWms implements INodeType {
 				],
 				default: 'salesOrder',
 			},
+			...incomingGoodOperations,
+			...incomingGoodFields,
 			...productOperations,
 			...productFields,
 			...purchaseOrderOperations,
@@ -65,7 +68,44 @@ export class PulpoWms implements INodeType {
 				const resource = this.getNodeParameter('resource', i) as string;
 				const operation = this.getNodeParameter('operation', i) as string;
 
-				if (resource === 'product') {
+				if (resource === 'incomingGood') {
+					if (operation === 'getAll') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
+						const qs: IDataObject = { ...filters };
+
+						if (returnAll) {
+							const records = await pulpoRequestAll(this, '/reception/incoming_goods', 'incoming_goods', qs);
+							returnData.push(...records.map((item) => ({ json: item, pairedItem: { item: i } })));
+						} else {
+							const limit = this.getNodeParameter('limit', i, 50) as number;
+							const offset = this.getNodeParameter('offset', i, 0) as number;
+							const result = await pulpoRequest(this, 'GET', '/reception/incoming_goods', undefined, {
+								...qs,
+								limit,
+								offset,
+							});
+							const records = (result?.incoming_goods as IDataObject[]) ?? [];
+							returnData.push(...records.map((item) => ({ json: item, pairedItem: { item: i } })));
+						}
+					} else if (operation === 'get') {
+						const incomingGoodId = this.getNodeParameter('incomingGoodId', i) as number;
+						const result = await pulpoRequest(this, 'GET', `/reception/incoming_goods/${incomingGoodId}`);
+						if (result) {
+							returnData.push({ json: result, pairedItem: { item: i } });
+						}
+					} else if (operation === 'create') {
+						const documentType = this.getNodeParameter('documentType', i) as string;
+						const additionalFields = this.getNodeParameter('additionalFields', i, {}) as IDataObject;
+						const body: IDataObject = { document_type: documentType, ...additionalFields };
+						const result = await pulpoRequest(this, 'POST', '/reception/incoming_goods', body);
+						if (result) {
+							returnData.push({ json: result, pairedItem: { item: i } });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), `Unknown operation: "${operation}"`, { itemIndex: i });
+					}
+				} else if (resource === 'product') {
 					if (operation === 'getAll') {
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
 						const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
