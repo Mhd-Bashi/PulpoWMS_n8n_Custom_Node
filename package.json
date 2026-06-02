@@ -4,8 +4,13 @@
   "description": "n8n community node for Pulpo WMS — manage sales orders, purchase orders, products, third parties, incoming goods, fulfillments, and inventory stock.",
   "license": "MIT",
   "homepage": "",
-  "keywords": ["n8n-community-node-package"],
-  "author": { "name": "Mhd-Bashi", "email": "muhammad.otahbashi@altruan.de" },
+  "keywords": [
+    "n8n-community-node-package"
+  ],
+  "author": {
+    "name": "Mhd-Bashi",
+    "email": "muhammad.otahbashi@altruan.de"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/Mhd-Bashi/PulpoWMS_n8n_Custom_Node.git"
@@ -17,13 +22,18 @@
     "lint": "n8n-node lint",
     "lint:fix": "n8n-node lint --fix",
     "release": "n8n-node release",
-    "prepublishOnly": "n8n-node prerelease"
+    "prepublishOnly": "n8n-node prerelease",
+    "test": "jest"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "n8n": {
     "n8nNodesApiVersion": 1,
     "strict": true,
-    "credentials": ["dist/credentials/PulpoWmsApi.credentials.js"],
+    "credentials": [
+      "dist/credentials/PulpoWmsApi.credentials.js"
+    ],
     "nodes": [
       "dist/nodes/PulpoWms/PulpoWms.node.js",
       "dist/nodes/PulpoWms/PulpoWmsTrigger.node.js"
@@ -31,10 +41,15 @@
   },
   "devDependencies": {
     "@n8n/node-cli": "*",
+    "@types/jest": "^30.0.0",
     "eslint": "9.29.0",
+    "jest": "^30.4.2",
     "prettier": "3.6.2",
     "release-it": "^19.0.4",
+    "ts-jest": "^29.4.11",
     "typescript": "5.9.2"
   },
-  "peerDependencies": { "n8n-workflow": "*" }
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
 }
