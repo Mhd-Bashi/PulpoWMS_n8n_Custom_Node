@@ -1,0 +1,318 @@
+import type { INodeProperties } from 'n8n-workflow';
+
+export const purchaseOrderOperations: INodeProperties[] = [
+	{
+		displayName: 'Operation',
+		name: 'operation',
+		type: 'options',
+		noDataExpression: true,
+		displayOptions: { show: { resource: ['purchaseOrder'] } },
+		options: [
+			{
+				name: 'Create',
+				value: 'create',
+				action: 'Create a purchase order',
+				description: 'Create a new purchase order',
+			},
+			{
+				name: 'Get',
+				value: 'get',
+				action: 'Get a purchase order',
+				description: 'Get a purchase order by ID',
+			},
+			{
+				name: 'Get Many',
+				value: 'getAll',
+				action: 'Get many purchase orders',
+				description: 'Get a list of purchase orders',
+			},
+			{
+				name: 'Update',
+				value: 'update',
+				action: 'Update a purchase order',
+				description: 'Update a purchase order by ID',
+			},
+		],
+		default: 'getAll',
+	},
+];
+
+export const purchaseOrderFields: INodeProperties[] = [
+	// ── Get Many ──────────────────────────────────────────────────────────────
+	{
+		displayName: 'Return All',
+		name: 'returnAll',
+		type: 'boolean',
+		displayOptions: { show: { resource: ['purchaseOrder'], operation: ['getAll'] } },
+		default: false,
+		description: 'Whether to return all results or only up to a given limit',
+	},
+	{
+		displayName: 'Limit',
+		name: 'limit',
+		type: 'number',
+		typeOptions: { minValue: 1, maxValue: 1000 },
+		displayOptions: {
+			show: { resource: ['purchaseOrder'], operation: ['getAll'], returnAll: [false] },
+		},
+		default: 50,
+		description: 'Max number of results to return',
+	},
+	{
+		displayName: 'Offset',
+		name: 'offset',
+		type: 'number',
+		typeOptions: { minValue: 0 },
+		displayOptions: {
+			show: { resource: ['purchaseOrder'], operation: ['getAll'], returnAll: [false] },
+		},
+		default: 0,
+		description: 'Number of results to skip',
+	},
+	{
+		displayName: 'Filters',
+		name: 'filters',
+		type: 'collection',
+		placeholder: 'Add Filter',
+		default: {},
+		displayOptions: { show: { resource: ['purchaseOrder'], operation: ['getAll'] } },
+		options: [
+			{
+				displayName: 'Delivery Date',
+				name: 'delivery_date',
+				type: 'string',
+				default: '',
+				description: 'Filter by delivery date (format: YYYY-MM-DD hh:mm:ss)',
+			},
+			{
+				displayName: 'Inserted At',
+				name: 'inserted_at',
+				type: 'string',
+				default: '',
+				description: 'Filter by creation date (format: YYYY-MM-DD hh:mm:ss)',
+			},
+			{
+				displayName: 'Order Number',
+				name: 'order_num',
+				type: 'string',
+				default: '',
+				description: 'Filter by order reference number',
+			},
+			{
+				displayName: 'Product Name',
+				name: 'product_name',
+				type: 'string',
+				default: '',
+				description: 'Filter by product name',
+			},
+			{
+				displayName: 'Product SKU',
+				name: 'product_sku',
+				type: 'string',
+				default: '',
+				description: 'Filter by product SKU',
+			},
+			{
+				displayName: 'State',
+				name: 'state',
+				type: 'options',
+				options: [
+					{ name: 'Checking', value: 'checking' },
+					{ name: 'Closed', value: 'closed' },
+					{ name: 'Queue', value: 'queue' },
+				],
+				default: 'queue',
+				description: 'Filter by purchase order state',
+			},
+			{
+				displayName: 'Supplier ID',
+				name: 'supplier_id',
+				type: 'string',
+				default: '',
+				description: 'Filter by supplier ID',
+			},
+		],
+	},
+
+	// ── Get / Update ──────────────────────────────────────────────────────────
+	{
+		displayName: 'Purchase Order ID',
+		name: 'purchaseOrderId',
+		type: 'number',
+		required: true,
+		displayOptions: { show: { resource: ['purchaseOrder'], operation: ['get', 'update'] } },
+		default: 0,
+		description: 'ID of the purchase order',
+	},
+
+	// ── Create ────────────────────────────────────────────────────────────────
+	{
+		displayName: 'Order Number',
+		name: 'orderNum',
+		type: 'string',
+		required: true,
+		displayOptions: { show: { resource: ['purchaseOrder'], operation: ['create'] } },
+		default: '',
+		description: 'Unique reference number for the purchase order',
+	},
+	{
+		displayName: 'Additional Fields',
+		name: 'additionalFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: { show: { resource: ['purchaseOrder'], operation: ['create'] } },
+		options: [
+			{
+				displayName: 'Attributes (JSON)',
+				name: 'attributes',
+				type: 'json',
+				default: '{}',
+				description: 'Custom purchase order attributes as a JSON object',
+			},
+			{
+				displayName: 'Criterium',
+				name: 'criterium',
+				type: 'string',
+				default: '',
+				description: 'Criteria for the purchase order',
+			},
+			{
+				displayName: 'Delivery Date',
+				name: 'delivery_date',
+				type: 'string',
+				default: '',
+				description: 'Expected delivery date (format: YYYY-MM-DD hh:mm:ss)',
+			},
+			{
+				displayName: 'Items (JSON)',
+				name: 'items',
+				type: 'json',
+				default: '[]',
+				description: 'Array of purchase order line items. Each item: { product_id, requested_quantity, line_item_number?, line_order_id? }.',
+			},
+			{
+				displayName: 'Merchant Channel ID',
+				name: 'merchant_channel_id',
+				type: 'number',
+				default: 0,
+				description: 'Merchant channel ID to associate with',
+			},
+			{
+				displayName: 'Merchant ID',
+				name: 'merchant_id',
+				type: 'number',
+				default: 0,
+				description: 'Merchant ID to associate with',
+			},
+			{
+				displayName: 'Notes',
+				name: 'notes',
+				type: 'string',
+				default: '',
+				description: 'Additional notes for the purchase order',
+			},
+			{
+				displayName: 'Third Party ID',
+				name: 'third_party_id',
+				type: 'number',
+				default: 0,
+				description: 'ID of the supplier (third party)',
+			},
+			{
+				displayName: 'Type',
+				name: 'type',
+				type: 'string',
+				default: '',
+				description: 'Type of purchase order',
+			},
+			{
+				displayName: 'Warehouse ID',
+				name: 'warehouse_id',
+				type: 'number',
+				default: 0,
+				description: 'ID of the destination warehouse',
+			},
+		],
+	},
+
+	// ── Update ────────────────────────────────────────────────────────────────
+	{
+		displayName: 'Update Fields',
+		name: 'updateFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: { show: { resource: ['purchaseOrder'], operation: ['update'] } },
+		options: [
+			{
+				displayName: 'Attributes (JSON)',
+				name: 'attributes',
+				type: 'json',
+				default: '{}',
+			},
+			{
+				displayName: 'Criterium',
+				name: 'criterium',
+				type: 'string',
+				default: '',
+			},
+			{
+				displayName: 'Delivery Date',
+				name: 'delivery_date',
+				type: 'string',
+				default: '',
+				description: 'Expected delivery date (format: YYYY-MM-DD hh:mm:ss)',
+			},
+			{
+				displayName: 'Items (JSON)',
+				name: 'items',
+				type: 'json',
+				default: '[]',
+				description: 'Array of purchase order line items. Each item: { product_id, requested_quantity, line_item_number?, line_order_id? }.',
+			},
+			{
+				displayName: 'Merchant Channel ID',
+				name: 'merchant_channel_id',
+				type: 'number',
+				default: 0,
+			},
+			{
+				displayName: 'Merchant ID',
+				name: 'merchant_id',
+				type: 'number',
+				default: 0,
+			},
+			{
+				displayName: 'Notes',
+				name: 'notes',
+				type: 'string',
+				default: '',
+			},
+			{
+				displayName: 'Order Number',
+				name: 'order_num',
+				type: 'string',
+				default: '',
+			},
+			{
+				displayName: 'Third Party ID',
+				name: 'third_party_id',
+				type: 'number',
+				default: 0,
+			},
+			{
+				displayName: 'Type',
+				name: 'type',
+				type: 'string',
+				default: '',
+			},
+			{
+				displayName: 'Warehouse ID',
+				name: 'warehouse_id',
+				type: 'number',
+				default: 0,
+			},
+		],
+	},
+];

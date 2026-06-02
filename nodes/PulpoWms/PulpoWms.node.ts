@@ -9,6 +9,7 @@ import {
 	type JsonObject,
 } from 'n8n-workflow';
 import { productOperations, productFields } from './descriptions/product';
+import { purchaseOrderOperations, purchaseOrderFields } from './descriptions/purchaseOrder';
 import { thirdPartyOperations, thirdPartyFields } from './descriptions/thirdParty';
 import { pulpoRequest, pulpoRequestAll } from './transport/request';
 
@@ -45,6 +46,8 @@ export class PulpoWms implements INodeType {
 			},
 			...productOperations,
 			...productFields,
+			...purchaseOrderOperations,
+			...purchaseOrderFields,
 			...thirdPartyOperations,
 			...thirdPartyFields,
 		],
@@ -57,10 +60,9 @@ export class PulpoWms implements INodeType {
 		for (let i = 0; i < items.length; i++) {
 			try {
 				const resource = this.getNodeParameter('resource', i) as string;
+				const operation = this.getNodeParameter('operation', i) as string;
 
 				if (resource === 'product') {
-					const operation = this.getNodeParameter('operation', i) as string;
-
 					if (operation === 'getAll') {
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
 						const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
@@ -77,7 +79,7 @@ export class PulpoWms implements INodeType {
 								limit,
 								offset,
 							});
-							const products = ((result?.products as IDataObject[]) ?? []);
+							const products = (result?.products as IDataObject[]) ?? [];
 							returnData.push(...products.map((item) => ({ json: item, pairedItem: { item: i } })));
 						}
 					} else if (operation === 'get') {
@@ -105,9 +107,51 @@ export class PulpoWms implements INodeType {
 					} else {
 						throw new NodeOperationError(this.getNode(), `Unknown operation: "${operation}"`, { itemIndex: i });
 					}
-					} else if (resource === 'thirdParty') {
-					const operation = this.getNodeParameter('operation', i) as string;
+				} else if (resource === 'purchaseOrder') {
+					if (operation === 'getAll') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
+						const qs: IDataObject = { ...filters };
 
+						if (returnAll) {
+							const records = await pulpoRequestAll(this, '/reception/purchase_orders', 'purchase_orders', qs);
+							returnData.push(...records.map((item) => ({ json: item, pairedItem: { item: i } })));
+						} else {
+							const limit = this.getNodeParameter('limit', i, 50) as number;
+							const offset = this.getNodeParameter('offset', i, 0) as number;
+							const result = await pulpoRequest(this, 'GET', '/reception/purchase_orders', undefined, {
+								...qs,
+								limit,
+								offset,
+							});
+							const records = (result?.purchase_orders as IDataObject[]) ?? [];
+							returnData.push(...records.map((item) => ({ json: item, pairedItem: { item: i } })));
+						}
+					} else if (operation === 'get') {
+						const purchaseOrderId = this.getNodeParameter('purchaseOrderId', i) as number;
+						const result = await pulpoRequest(this, 'GET', `/reception/purchase_orders/${purchaseOrderId}`);
+						if (result) {
+							returnData.push({ json: result, pairedItem: { item: i } });
+						}
+					} else if (operation === 'create') {
+						const orderNum = this.getNodeParameter('orderNum', i) as string;
+						const additionalFields = this.getNodeParameter('additionalFields', i, {}) as IDataObject;
+						const body: IDataObject = { order_num: orderNum, ...additionalFields };
+						const result = await pulpoRequest(this, 'POST', '/reception/purchase_orders', body);
+						if (result) {
+							returnData.push({ json: result, pairedItem: { item: i } });
+						}
+					} else if (operation === 'update') {
+						const purchaseOrderId = this.getNodeParameter('purchaseOrderId', i) as number;
+						const updateFields = this.getNodeParameter('updateFields', i, {}) as IDataObject;
+						const result = await pulpoRequest(this, 'PUT', `/reception/purchase_orders/${purchaseOrderId}`, updateFields);
+						if (result) {
+							returnData.push({ json: result, pairedItem: { item: i } });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), `Unknown operation: "${operation}"`, { itemIndex: i });
+					}
+				} else if (resource === 'thirdParty') {
 					if (operation === 'getAll') {
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
 						const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
@@ -124,7 +168,7 @@ export class PulpoWms implements INodeType {
 								limit,
 								offset,
 							});
-							const records = ((result?.third_parties as IDataObject[]) ?? []);
+							const records = (result?.third_parties as IDataObject[]) ?? [];
 							returnData.push(...records.map((item) => ({ json: item, pairedItem: { item: i } })));
 						}
 					} else if (operation === 'get') {
