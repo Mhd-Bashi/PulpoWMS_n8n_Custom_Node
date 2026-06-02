@@ -1,0 +1,220 @@
+import type { INodeProperties } from 'n8n-workflow';
+
+export const salesOrderFulfillmentOperations: INodeProperties[] = [
+	{
+		displayName: 'Operation',
+		name: 'operation',
+		type: 'options',
+		noDataExpression: true,
+		displayOptions: { show: { resource: ['salesOrderFulfillment'] } },
+		options: [
+			{
+				name: 'Get',
+				value: 'get',
+				action: 'Get a fulfillment order',
+				description: 'Get a fulfillment order by ID',
+			},
+			{
+				name: 'Get Many',
+				value: 'getAll',
+				action: 'Get many fulfillment orders',
+				description: 'Get a list of fulfillment orders',
+			},
+		],
+		default: 'getAll',
+	},
+];
+
+export const salesOrderFulfillmentFields: INodeProperties[] = [
+	// ── Get Many ──────────────────────────────────────────────────────────────
+	{
+		displayName: 'Scope',
+		name: 'scope',
+		type: 'options',
+		noDataExpression: true,
+		displayOptions: { show: { resource: ['salesOrderFulfillment'], operation: ['getAll'] } },
+		options: [
+			{
+				name: 'All Fulfillment Orders',
+				value: 'all',
+				description: 'Fetch fulfillment orders across all sales orders',
+			},
+			{
+				name: 'By Sales Order',
+				value: 'bySalesOrder',
+				description: 'Fetch fulfillment orders belonging to a specific sales order',
+			},
+		],
+		default: 'all',
+		description: 'Whether to fetch all fulfillment orders or only those for a specific sales order',
+	},
+	{
+		displayName: 'Sales Order ID',
+		name: 'salesOrderId',
+		type: 'number',
+		required: true,
+		displayOptions: {
+			show: { resource: ['salesOrderFulfillment'], operation: ['getAll'], scope: ['bySalesOrder'] },
+		},
+		default: 0,
+		description: 'ID of the parent sales order',
+	},
+	{
+		displayName: 'Return All',
+		name: 'returnAll',
+		type: 'boolean',
+		displayOptions: { show: { resource: ['salesOrderFulfillment'], operation: ['getAll'] } },
+		default: false,
+		description: 'Whether to return all results or only up to a given limit',
+	},
+	{
+		displayName: 'Limit',
+		name: 'limit',
+		type: 'number',
+		typeOptions: { minValue: 1, maxValue: 1000 },
+		displayOptions: {
+			show: { resource: ['salesOrderFulfillment'], operation: ['getAll'], returnAll: [false] },
+		},
+		default: 50,
+		description: 'Max number of results to return',
+	},
+	{
+		displayName: 'Offset',
+		name: 'offset',
+		type: 'number',
+		typeOptions: { minValue: 0 },
+		displayOptions: {
+			show: { resource: ['salesOrderFulfillment'], operation: ['getAll'], returnAll: [false] },
+		},
+		default: 0,
+		description: 'Number of results to skip',
+	},
+	{
+		displayName: 'Filters',
+		name: 'filters',
+		type: 'collection',
+		placeholder: 'Add Filter',
+		default: {},
+		displayOptions: { show: { resource: ['salesOrderFulfillment'], operation: ['getAll'] } },
+		options: [
+			{
+				displayName: 'Channel',
+				name: 'channel',
+				type: 'string',
+				default: '',
+				description: 'Filter by sales channel',
+			},
+			{
+				displayName: 'Client ID',
+				name: 'client_id',
+				type: 'string',
+				default: '',
+				description: 'Filter by customer ID',
+			},
+			{
+				displayName: 'Criterium',
+				name: 'criterium',
+				type: 'string',
+				default: '',
+				description: 'Filter by order criterium',
+			},
+			{
+				displayName: 'Delivery Date',
+				name: 'delivery_date',
+				type: 'string',
+				default: '',
+				description: 'Filter by delivery date (format: YYYY-MM-DD hh:mm:ss)',
+			},
+			{
+				displayName: 'Inserted At',
+				name: 'inserted_at',
+				type: 'string',
+				default: '',
+				description: 'Filter by creation date (format: YYYY-MM-DD hh:mm:ss)',
+			},
+			{
+				displayName: 'Order Number',
+				name: 'order_num',
+				type: 'string',
+				default: '',
+				description: 'Filter by fulfillment order reference number',
+			},
+			{
+				displayName: 'Product ID',
+				name: 'product_id',
+				type: 'number',
+				default: 0,
+				description: 'Filter fulfillment orders containing this product ID',
+			},
+			{
+				displayName: 'Sales Order ID',
+				name: 'sales_order_id',
+				type: 'number',
+				default: 0,
+				description: 'Filter by origin sales order ID',
+			},
+			{
+				displayName: 'Sequence Number',
+				name: 'sequence_number',
+				type: 'string',
+				default: '',
+				description: 'Filter by fulfillment order sequence number',
+			},
+			{
+				displayName: 'State',
+				name: 'state',
+				type: 'options',
+				options: [
+					{ name: 'Cancelled', value: 'cancelled' },
+					{ name: 'Ended', value: 'ended' },
+					{ name: 'Packing', value: 'packing' },
+					{ name: 'Picking', value: 'picking' },
+					{ name: 'Queue', value: 'queue' },
+				],
+				default: 'queue',
+				description: 'Filter by fulfillment order state',
+			},
+			{
+				displayName: 'Third Party ID',
+				name: 'third_party_id',
+				type: 'number',
+				default: 0,
+				description: 'Filter by customer (third party) ID',
+			},
+			{
+				displayName: 'Updated At',
+				name: 'updated_at',
+				type: 'string',
+				default: '',
+				description: 'Filter by last update date (format: YYYY-MM-DD hh:mm:ss)',
+			},
+			{
+				displayName: 'Warehouse ID',
+				name: 'warehouse_id',
+				type: 'number',
+				default: 0,
+				description: 'Filter by warehouse ID',
+			},
+		],
+	},
+
+	// ── Get ───────────────────────────────────────────────────────────────────
+	{
+		displayName: 'Sales Order ID',
+		name: 'salesOrderId',
+		type: 'number',
+		required: true,
+		displayOptions: { show: { resource: ['salesOrderFulfillment'], operation: ['get'] } },
+		default: 0,
+		description: 'ID of the parent sales order',
+	},
+	{
+		displayName: 'Fulfillment Order ID',
+		name: 'fulfillmentOrderId',
+		type: 'number',
+		required: true,
+		displayOptions: { show: { resource: ['salesOrderFulfillment'], operation: ['get'] } },
+		default: 0,
+		description: 'ID of the fulfillment order',
+	},
+];

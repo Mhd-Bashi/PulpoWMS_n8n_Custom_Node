@@ -12,6 +12,7 @@ import { incomingGoodOperations, incomingGoodFields } from './descriptions/incom
 import { productOperations, productFields } from './descriptions/product';
 import { purchaseOrderOperations, purchaseOrderFields } from './descriptions/purchaseOrder';
 import { salesOrderOperations, salesOrderFields } from './descriptions/salesOrder';
+import { salesOrderFulfillmentOperations, salesOrderFulfillmentFields } from './descriptions/salesOrderFulfillment';
 import { thirdPartyOperations, thirdPartyFields } from './descriptions/thirdParty';
 import { pulpoRequest, pulpoRequestAll } from './transport/request';
 
@@ -54,6 +55,8 @@ export class PulpoWms implements INodeType {
 			...purchaseOrderFields,
 			...salesOrderOperations,
 			...salesOrderFields,
+			...salesOrderFulfillmentOperations,
+			...salesOrderFulfillmentFields,
 			...thirdPartyOperations,
 			...thirdPartyFields,
 		],
@@ -232,6 +235,49 @@ export class PulpoWms implements INodeType {
 						const salesOrderId = this.getNodeParameter('salesOrderId', i) as number;
 						const updateFields = this.getNodeParameter('updateFields', i, {}) as IDataObject;
 						const result = await pulpoRequest(this, 'PUT', `/sales/orders/${salesOrderId}`, updateFields);
+						if (result) {
+							returnData.push({ json: result, pairedItem: { item: i } });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), `Unknown operation: "${operation}"`, { itemIndex: i });
+					}
+				} else if (resource === 'salesOrderFulfillment') {
+					if (operation === 'getAll') {
+						const scope = this.getNodeParameter('scope', i) as string;
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
+						const qs: IDataObject = { ...filters };
+
+						let endpoint: string;
+						if (scope === 'bySalesOrder') {
+							const salesOrderId = this.getNodeParameter('salesOrderId', i) as number;
+							endpoint = `/sales/orders/${salesOrderId}/fulfillments`;
+						} else {
+							endpoint = '/sales/orders/fulfillments';
+						}
+
+						if (returnAll) {
+							const records = await pulpoRequestAll(this, endpoint, 'fulfillment_orders', qs);
+							returnData.push(...records.map((item) => ({ json: item, pairedItem: { item: i } })));
+						} else {
+							const limit = this.getNodeParameter('limit', i, 50) as number;
+							const offset = this.getNodeParameter('offset', i, 0) as number;
+							const result = await pulpoRequest(this, 'GET', endpoint, undefined, {
+								...qs,
+								limit,
+								offset,
+							});
+							const records = (result?.fulfillment_orders as IDataObject[]) ?? [];
+							returnData.push(...records.map((item) => ({ json: item, pairedItem: { item: i } })));
+						}
+					} else if (operation === 'get') {
+						const salesOrderId = this.getNodeParameter('salesOrderId', i) as number;
+						const fulfillmentOrderId = this.getNodeParameter('fulfillmentOrderId', i) as number;
+						const result = await pulpoRequest(
+							this,
+							'GET',
+							`/sales/orders/${salesOrderId}/fulfillments/${fulfillmentOrderId}`,
+						);
 						if (result) {
 							returnData.push({ json: result, pairedItem: { item: i } });
 						}
