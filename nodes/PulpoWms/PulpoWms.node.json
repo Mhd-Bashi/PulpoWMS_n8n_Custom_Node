@@ -1,12 +1,12 @@
 {
-	"node": "n8n-nodes-pulpo-wms",
+	"node": "n8n-nodes-pulpo-wms.pulpoWms",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
-	"categories": ["Development", "Developer Tools"],
+	"categories": ["Productivity", "Data & Storage"],
 	"resources": {
 		"credentialDocumentation": [
 			{
-				"url": "https://github.com/Mhd-Bashi/PulpoWMS_n8n_Custom_Node#readme"
+				"url": "https://github.com/Mhd-Bashi/PulpoWMS_n8n_Custom_Node#credentials"
 			}
 		],
 		"primaryDocumentation": [
