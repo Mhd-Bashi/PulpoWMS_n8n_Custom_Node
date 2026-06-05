@@ -1,4 +1,4 @@
-# n8n Community Node — Publishing & Verification Guide
+\# n8n Community Node — Publishing & Verification Guide
 
 Everything learned from publishing `n8n-nodes-weclapp` end-to-end.
 
