@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-pulpo-wms",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "n8n community node for Pulpo WMS — manage sales orders, purchase orders, products, third parties, incoming goods, fulfillments, and inventory stock.",
   "license": "MIT",
   "homepage": "https://github.com/Mhd-Bashi/PulpoWMS_n8n_Custom_Node#readme",
