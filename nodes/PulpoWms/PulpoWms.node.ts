@@ -17,7 +17,7 @@ import { purchaseOrderOperations, purchaseOrderFields } from './descriptions/pur
 import { salesOrderOperations, salesOrderFields } from './descriptions/salesOrder';
 import { salesOrderFulfillmentOperations, salesOrderFulfillmentFields } from './descriptions/salesOrderFulfillment';
 import { thirdPartyOperations, thirdPartyFields } from './descriptions/thirdParty';
-import { pulpoFormRequest, pulpoRequest, pulpoRequestAll } from './transport/request';
+import { pulpoRequest, pulpoRequestAll } from './transport/request';
 
 export class PulpoWms implements INodeType {
 	description: INodeTypeDescription = {
@@ -163,7 +163,7 @@ export class PulpoWms implements INodeType {
 							quantity,
 							...additionalFields,
 						};
-						const result = await pulpoFormRequest(this, '/inventory/stocks/remove', formFields);
+						const result = await pulpoRequest(this, 'POST', '/inventory/stocks/remove', formFields);
 						if (result) {
 							returnData.push({ json: result, pairedItem: { item: i } });
 						}
